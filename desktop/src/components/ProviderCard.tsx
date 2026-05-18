@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Cloud, MoreVertical, Zap, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Cloud, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import type { Provider } from '../types/provider';
 
 interface ProviderCardProps {
@@ -10,40 +10,64 @@ interface ProviderCardProps {
   onDelete: (id: string) => void;
 }
 
-const statusColors: Record<string, string> = {
-  active: 'text-green-400',
-  inactive: 'text-gray-500',
-  error: 'text-red-400',
-  'rate-limited': 'text-yellow-400',
-  'quota-exhausted': 'text-orange-400',
-};
-
-const typeColors: Record<string, string> = {
-  free: 'bg-green-500/20 text-green-400',
-  oauth: 'bg-blue-500/20 text-blue-400',
-  'api-key': 'bg-purple-500/20 text-purple-400',
-  local: 'bg-orange-500/20 text-orange-400',
-};
-
 export function ProviderCard({ provider, onToggle, onTest, onEdit, onDelete }: ProviderCardProps) {
   const { t } = useTranslation();
 
+  const statusBadge = provider.status === 'active'
+    ? { bg: '#d1fae5', color: '#065f46', border: '#6ee7b7' }
+    : provider.status === 'error'
+      ? { bg: 'rgba(198, 87, 70, 0.14)', color: '#8a3a30', border: 'rgba(198, 87, 70, 0.35)' }
+      : { bg: 'rgba(139, 134, 128, 0.18)', color: 'var(--primary-active)', border: 'var(--border-color)' };
+
+  const typeBadge = provider.type === 'free'
+    ? { bg: '#d1fae5', color: '#065f46' }
+    : provider.type === 'oauth'
+      ? { bg: 'rgba(59, 130, 246, 0.12)', color: '#1e40af' }
+      : provider.type === 'api-key'
+        ? { bg: 'rgba(139, 92, 246, 0.12)', color: '#5b21b6' }
+        : { bg: 'rgba(249, 115, 22, 0.12)', color: '#9a3412' };
+
   return (
-    <div className={`bg-dark-card border rounded-xl p-5 transition-all ${
-      provider.enabled ? 'border-dark-border hover:border-primary-600/50' : 'border-dark-border/50 opacity-60'
-    }`}>
-      <div className="flex items-start justify-between mb-3">
+    <div
+      className="flex flex-col gap-3 p-5"
+      style={{
+        background: 'linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 86%, transparent), color-mix(in srgb, var(--bg-secondary) 72%, transparent))',
+        border: '1px solid color-mix(in srgb, var(--border-color) 66%, transparent)',
+        borderRadius: 'var(--radius-lg)',
+        backdropFilter: 'blur(var(--glass-blur))',
+        boxShadow: 'var(--shadow-card)',
+        transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
+        opacity: provider.enabled ? 1 : 0.6,
+        animation: 'cardEnter 0.4s ease-out both',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--border-hover) 82%, transparent)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--border-color) 66%, transparent)';
+        e.currentTarget.style.transform = 'none';
+      }}
+    >
+      <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-dark-border rounded-lg flex items-center justify-center">
-            <Cloud className="w-5 h-5 text-primary-400" />
+          <div
+            className="w-10 h-10 flex items-center justify-center flex-shrink-0"
+            style={{
+              borderRadius: 'var(--radius-md)',
+              background: 'color-mix(in srgb, var(--primary-color) 10%, var(--bg-secondary))',
+              color: 'var(--primary-color)',
+            }}
+          >
+            <Cloud className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-white font-medium">{provider.displayName}</h3>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{provider.displayName}</h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className={`text-xs px-2 py-0.5 rounded-full ${typeColors[provider.type] ?? 'bg-gray-500/20 text-gray-400'}`}>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: typeBadge.bg, color: typeBadge.color }}>
                 {t(`providers.${provider.type === 'api-key' ? 'apikey' : provider.type}`)}
               </span>
-              <span className={`flex items-center gap-1 text-xs ${statusColors[provider.status] ?? 'text-gray-400'}`}>
+              <span className="flex items-center gap-1 text-xs font-medium" style={{ color: statusBadge.color }}>
                 {provider.status === 'active' ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
                 {t(`providers.${provider.status}`)}
               </span>
@@ -51,47 +75,51 @@ export function ProviderCard({ provider, onToggle, onTest, onEdit, onDelete }: P
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onToggle(provider.id, !provider.enabled)}
-            className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-              provider.enabled
-                ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                : 'bg-dark-border text-dark-muted hover:bg-dark-border/80'
-            }`}
-          >
-            {provider.enabled ? t('common.enabled') : t('common.disabled')}
-          </button>
-        </div>
+        <button
+          onClick={() => onToggle(provider.id, !provider.enabled)}
+          className="px-2.5 py-1 text-xs rounded-md font-semibold"
+          style={{
+            background: provider.enabled ? statusBadge.bg : 'var(--bg-tertiary)',
+            color: provider.enabled ? statusBadge.color : 'var(--text-tertiary)',
+            border: `1px solid ${provider.enabled ? statusBadge.border : 'var(--border-color)'}`,
+            cursor: 'pointer',
+            transition: 'all 150ms ease',
+          }}
+        >
+          {provider.enabled ? t('common.enabled') : t('common.disabled')}
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+      <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <span className="text-dark-muted">{t('providers.models')}:</span>
-          <span className="text-white ml-1">{provider.models.length}</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>{t('providers.models')}:</span>
+          <span className="ml-1 font-medium" style={{ color: 'var(--text-primary)' }}>{provider.models.length}</span>
         </div>
         <div>
-          <span className="text-dark-muted">{t('providers.priority')}:</span>
-          <span className="text-white ml-1">{provider.priority}</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>{t('providers.priority')}:</span>
+          <span className="ml-1 font-medium" style={{ color: 'var(--text-primary)' }}>{provider.priority}</span>
         </div>
         {provider.baseUrl && (
           <div className="col-span-2 truncate">
-            <span className="text-dark-muted">URL:</span>
-            <span className="text-white ml-1 text-xs">{provider.baseUrl}</span>
+            <span style={{ color: 'var(--text-tertiary)' }}>URL:</span>
+            <span className="ml-1 text-xs" style={{ color: 'var(--text-secondary)' }}>{provider.baseUrl}</span>
           </div>
         )}
       </div>
 
       {provider.quota && (
-        <div className="mb-3">
-          <div className="flex justify-between text-xs text-dark-muted mb-1">
+        <div>
+          <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
             <span>{t('accounts.quota')}</span>
             <span>{provider.quota.used}/{provider.quota.total} {provider.quota.unit}</span>
           </div>
-          <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
             <div
-              className="h-full bg-primary-500 rounded-full transition-all"
-              style={{ width: `${Math.min(100, (provider.quota.used / provider.quota.total) * 100)}%` }}
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, (provider.quota.used / provider.quota.total) * 100)}%`,
+                background: 'var(--primary-color)',
+              }}
             />
           </div>
         </div>
@@ -100,20 +128,38 @@ export function ProviderCard({ provider, onToggle, onTest, onEdit, onDelete }: P
       <div className="flex gap-2">
         <button
           onClick={() => onTest(provider.id)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs bg-dark-border hover:bg-dark-border/80 text-dark-muted hover:text-white rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer"
+          style={{
+            background: 'var(--bg-tertiary)',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-color)',
+            transition: 'all 150ms ease',
+          }}
         >
           <Zap className="w-3 h-3" />
           {t('providers.test')}
         </button>
         <button
           onClick={() => onEdit(provider.id)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs bg-dark-border hover:bg-dark-border/80 text-dark-muted hover:text-white rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer"
+          style={{
+            background: 'var(--bg-tertiary)',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-color)',
+            transition: 'all 150ms ease',
+          }}
         >
           {t('common.edit')}
         </button>
         <button
           onClick={() => onDelete(provider.id)}
-          className="py-1.5 px-2.5 text-xs bg-dark-border hover:bg-red-500/20 text-dark-muted hover:text-red-400 rounded-lg transition-colors"
+          className="py-1.5 px-2.5 text-xs font-medium rounded-lg cursor-pointer"
+          style={{
+            background: 'var(--bg-tertiary)',
+            color: 'var(--text-tertiary)',
+            border: '1px solid var(--border-color)',
+            transition: 'all 150ms ease',
+          }}
         >
           {t('common.delete')}
         </button>

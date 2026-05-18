@@ -11,7 +11,6 @@ import { SettingsPage } from './pages/Settings/SettingsPage';
 function App() {
   const { currentPage } = useAppStore();
   const { i18n } = useTranslation();
-  const theme = useAppStore((s) => s.theme);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -26,10 +25,12 @@ function App() {
   };
 
   return (
-    <div className={`flex h-screen ${theme === 'dark' ? 'dark bg-dark-bg text-dark-text' : 'bg-gray-50 text-gray-900'}`}>
+    <div className="flex h-screen" style={{ background: 'linear-gradient(180deg, var(--bg-secondary), var(--bg-quinary))' }}>
       <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
-        {renderPage()}
+      <main className="flex-1 overflow-y-auto" style={{ padding: '70px clamp(20px, 3vw, 48px) 40px' }}>
+        <div className="max-w-[1000px] mx-auto flex flex-col gap-6">
+          {renderPage()}
+        </div>
       </main>
     </div>
   );

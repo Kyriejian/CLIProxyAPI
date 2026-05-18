@@ -68,12 +68,12 @@ export function ModelsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6" style={{ animation: 'heroEnter 0.5s ease-out both' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('models.title')}</h1>
-          <p className="text-dark-muted text-sm mt-1">
+          <h1 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{t('models.title')}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
             {models.length} {t('models.available')} / {freeCount} {t('models.free')} / {paidCount} {t('models.paid')}
           </p>
         </div>
@@ -82,23 +82,28 @@ export function ModelsPage() {
       {/* Search & Filters */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
           <input
             type="text"
             placeholder={t('models.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-dark-card border border-dark-border rounded-lg text-sm text-white placeholder-dark-muted focus:outline-none focus:border-primary-600"
+            className="w-full pl-10 pr-4 py-2 text-sm rounded-lg outline-none"
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
-        <div className="flex gap-1 bg-dark-card border border-dark-border rounded-lg p-1">
+        <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
           {(['all', 'free', 'paid'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                filter === tab ? 'bg-primary-600 text-white' : 'text-dark-muted hover:text-white'
-              }`}
+              className="px-3 py-1 text-xs rounded-md cursor-pointer"
+              style={{
+                background: filter === tab ? 'var(--primary-color)' : 'transparent',
+                color: filter === tab ? 'var(--primary-contrast)' : 'var(--text-secondary)',
+                fontWeight: filter === tab ? 600 : 400,
+                transition: 'all 150ms ease',
+              }}
             >
               {t(`models.${tab}`)}
               <span className="ml-1 text-[10px]">
@@ -110,60 +115,78 @@ export function ModelsPage() {
       </div>
 
       {/* Models Table */}
-      <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
+      <div
+        className="overflow-hidden"
+        style={{
+          background: 'linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 86%, transparent), color-mix(in srgb, var(--bg-secondary) 72%, transparent))',
+          border: '1px solid color-mix(in srgb, var(--border-color) 66%, transparent)',
+          borderRadius: 'var(--radius-lg)',
+          backdropFilter: 'blur(var(--glass-blur))',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
         <table className="w-full">
           <thead>
-            <tr className="border-b border-dark-border">
-              <th className="text-left px-5 py-3 text-xs text-dark-muted font-medium">{t('models.name')}</th>
-              <th className="text-left px-5 py-3 text-xs text-dark-muted font-medium">{t('models.provider')}</th>
-              <th className="text-center px-5 py-3 text-xs text-dark-muted font-medium">{t('models.context')}</th>
-              <th className="text-center px-5 py-3 text-xs text-dark-muted font-medium">{t('models.streaming')}</th>
-              <th className="text-center px-5 py-3 text-xs text-dark-muted font-medium">{t('models.tools')}</th>
-              <th className="text-center px-5 py-3 text-xs text-dark-muted font-medium">{t('models.vision')}</th>
-              <th className="text-right px-5 py-3 text-xs text-dark-muted font-medium">{t('models.pricing')}</th>
+            <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <th className="text-left px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.name')}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.provider')}</th>
+              <th className="text-center px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.context')}</th>
+              <th className="text-center px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.streaming')}</th>
+              <th className="text-center px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.tools')}</th>
+              <th className="text-center px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.vision')}</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>{t('models.pricing')}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(model => (
-              <tr key={model.id} className={`border-b border-dark-border/50 hover:bg-dark-border/20 ${!model.available ? 'opacity-50' : ''}`}>
+              <tr
+                key={model.id}
+                style={{
+                  borderBottom: '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
+                  opacity: model.available ? 1 : 0.5,
+                  transition: 'background 150ms ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--text-primary) 4%, transparent)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <Box className="w-4 h-4 text-primary-400" />
-                    <span className="text-sm text-white font-mono">{model.name}</span>
+                    <Box className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
+                    <span className="text-sm font-mono font-medium" style={{ color: 'var(--text-primary)' }}>{model.name}</span>
                   </div>
                 </td>
                 <td className="px-5 py-3">
-                  <span className="text-sm text-dark-text">{model.providerName}</span>
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{model.providerName}</span>
                 </td>
                 <td className="px-5 py-3 text-center">
-                  <span className="text-sm text-dark-text">{formatContextWindow(model.contextWindow)}</span>
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{formatContextWindow(model.contextWindow)}</span>
                 </td>
                 <td className="px-5 py-3 text-center">
                   {model.streaming ? (
-                    <Check className="w-4 h-4 text-green-400 mx-auto" />
+                    <Check className="w-4 h-4 mx-auto" style={{ color: 'var(--success-color)' }} />
                   ) : (
-                    <X className="w-4 h-4 text-dark-muted mx-auto" />
+                    <X className="w-4 h-4 mx-auto" style={{ color: 'var(--text-quaternary)' }} />
                   )}
                 </td>
                 <td className="px-5 py-3 text-center">
                   {model.toolCalling ? (
-                    <Wrench className="w-4 h-4 text-blue-400 mx-auto" />
+                    <Wrench className="w-4 h-4 mx-auto" style={{ color: '#3b82f6' }} />
                   ) : (
-                    <X className="w-4 h-4 text-dark-muted mx-auto" />
+                    <X className="w-4 h-4 mx-auto" style={{ color: 'var(--text-quaternary)' }} />
                   )}
                 </td>
                 <td className="px-5 py-3 text-center">
                   {model.vision ? (
-                    <Eye className="w-4 h-4 text-purple-400 mx-auto" />
+                    <Eye className="w-4 h-4 mx-auto" style={{ color: '#8b5cf6' }} />
                   ) : (
-                    <X className="w-4 h-4 text-dark-muted mx-auto" />
+                    <X className="w-4 h-4 mx-auto" style={{ color: 'var(--text-quaternary)' }} />
                   )}
                 </td>
                 <td className="px-5 py-3 text-right">
                   {!model.pricing || (model.pricing.input === 0 && model.pricing.output === 0) ? (
-                    <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">{t('models.free')}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7' }}>{t('models.free')}</span>
                   ) : (
-                    <span className="text-xs text-dark-muted">
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       ${model.pricing.input.toFixed(4)}/{model.pricing.output.toFixed(4)}
                     </span>
                   )}
@@ -175,7 +198,7 @@ export function ModelsPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-dark-muted">
+        <div className="text-center py-12" style={{ color: 'var(--text-tertiary)' }}>
           <Box className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>{t('common.noData')}</p>
         </div>

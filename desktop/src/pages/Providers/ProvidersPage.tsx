@@ -50,7 +50,6 @@ export function ProvidersPage() {
   }
 
   function handleEdit(id: string) {
-    // For now, toggle enabled state
     const provider = providers.find(p => p.id === id);
     if (provider) {
       handleToggle(id, !provider.enabled);
@@ -87,18 +86,19 @@ export function ProvidersPage() {
   const filterTabs = ['all', 'free', 'api-key', 'oauth', 'local'] as const;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6" style={{ animation: 'heroEnter 0.5s ease-out both' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('providers.title')}</h1>
-          <p className="text-dark-muted text-sm mt-1">
+          <h1 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{t('providers.title')}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
             {providers.length} {t('providers.title')} / {providers.filter(p => p.enabled).length} {t('common.enabled')}
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg cursor-pointer"
+          style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', transition: 'background 150ms ease' }}
         >
           <Plus className="w-4 h-4" />
           {t('providers.add')}
@@ -108,23 +108,28 @@ export function ProvidersPage() {
       {/* Search & Filters */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
           <input
             type="text"
             placeholder={t('models.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-dark-card border border-dark-border rounded-lg text-sm text-white placeholder-dark-muted focus:outline-none focus:border-primary-600"
+            className="w-full pl-10 pr-4 py-2 text-sm rounded-lg outline-none"
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
-        <div className="flex gap-1 bg-dark-card border border-dark-border rounded-lg p-1">
+        <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
           {filterTabs.map(tab => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                filter === tab ? 'bg-primary-600 text-white' : 'text-dark-muted hover:text-white'
-              }`}
+              className="px-3 py-1 text-xs rounded-md cursor-pointer"
+              style={{
+                background: filter === tab ? 'var(--primary-color)' : 'transparent',
+                color: filter === tab ? 'var(--primary-contrast)' : 'var(--text-secondary)',
+                fontWeight: filter === tab ? 600 : 400,
+                transition: 'all 150ms ease',
+              }}
             >
               {tab === 'all' ? t('models.all') : tab === 'api-key' ? 'API Key' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
@@ -147,54 +152,58 @@ export function ProvidersPage() {
       </div>
 
       {filteredProviders.length === 0 && (
-        <div className="text-center py-12 text-dark-muted">
+        <div className="text-center py-12" style={{ color: 'var(--text-tertiary)' }}>
           <p>{t('providers.noProviders')}</p>
         </div>
       )}
 
       {/* Add Provider Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-dark-card border border-dark-border rounded-xl p-6 w-[480px]">
-            <h2 className="text-lg font-bold text-white mb-4">{t('providers.add')}</h2>
-            <div className="space-y-3">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgb(0 0 0 / 0.3)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-[480px] p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 48px rgb(0 0 0 / 0.22)' }}>
+            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{t('providers.add')}</h2>
+            <div className="flex flex-col gap-3">
               <div>
-                <label className="text-sm text-dark-muted">{t('providers.name')}</label>
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('providers.name')}</label>
                 <input
                   type="text"
                   value={newProvider.name}
                   onChange={(e) => setNewProvider(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white focus:outline-none focus:border-primary-600"
+                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg outline-none"
+                  style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="my-provider"
                 />
               </div>
               <div>
-                <label className="text-sm text-dark-muted">Display Name</label>
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>Display Name</label>
                 <input
                   type="text"
                   value={newProvider.displayName}
                   onChange={(e) => setNewProvider(prev => ({ ...prev, displayName: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white focus:outline-none focus:border-primary-600"
+                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg outline-none"
+                  style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="My Provider"
                 />
               </div>
               <div>
-                <label className="text-sm text-dark-muted">{t('providers.baseUrl')}</label>
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('providers.baseUrl')}</label>
                 <input
                   type="text"
                   value={newProvider.baseUrl}
                   onChange={(e) => setNewProvider(prev => ({ ...prev, baseUrl: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white focus:outline-none focus:border-primary-600"
+                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg outline-none"
+                  style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="https://api.example.com/v1"
                 />
               </div>
               <div>
-                <label className="text-sm text-dark-muted">{t('providers.apiKey')}</label>
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('providers.apiKey')}</label>
                 <input
                   type="password"
                   value={newProvider.apiKey}
                   onChange={(e) => setNewProvider(prev => ({ ...prev, apiKey: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white focus:outline-none focus:border-primary-600"
+                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg outline-none"
+                  style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="sk-..."
                 />
               </div>
@@ -202,13 +211,15 @@ export function ProvidersPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-sm text-dark-muted hover:text-white transition-colors"
+                className="px-4 py-2 text-sm cursor-pointer"
+                style={{ color: 'var(--text-secondary)', transition: 'color 150ms ease' }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddProvider}
-                className="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-sm rounded-lg cursor-pointer"
+                style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', transition: 'background 150ms ease' }}
               >
                 {t('common.add')}
               </button>

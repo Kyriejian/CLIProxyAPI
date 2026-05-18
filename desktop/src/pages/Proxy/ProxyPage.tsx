@@ -3,6 +3,36 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../../stores/appStore';
 import { Copy, Shield, Globe, FileText, Layers } from 'lucide-react';
 
+const cardStyle: React.CSSProperties = {
+  background: 'linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 86%, transparent), color-mix(in srgb, var(--bg-secondary) 72%, transparent))',
+  border: '1px solid color-mix(in srgb, var(--border-color) 66%, transparent)',
+  borderRadius: 'var(--radius-lg)',
+  backdropFilter: 'blur(var(--glass-blur))',
+  boxShadow: 'var(--shadow-card)',
+  padding: '20px',
+};
+
+function Toggle({ enabled }: { enabled: boolean }) {
+  return (
+    <div
+      className="w-10 h-5 rounded-full relative cursor-pointer"
+      style={{
+        background: enabled ? 'var(--primary-color)' : 'var(--border-color)',
+        transition: 'background 150ms ease',
+      }}
+    >
+      <div
+        className="absolute top-0.5 w-4 h-4 bg-white rounded-full"
+        style={{
+          transform: enabled ? 'translateX(20px)' : 'translateX(2px)',
+          transition: 'transform 150ms ease',
+          boxShadow: '0 1px 3px rgb(0 0 0 / 0.15)',
+        }}
+      />
+    </div>
+  );
+}
+
 export function ProxyPage() {
   const { t } = useTranslation();
   const { proxyConfig, proxyStatus, requestLogs } = useAppStore();
@@ -18,66 +48,66 @@ export function ProxyPage() {
   const endpoint = `http://${proxyConfig.host}:${proxyConfig.port}`;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6" style={{ animation: 'heroEnter 0.5s ease-out both' }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('proxy.title')}</h1>
-          <p className="text-dark-muted text-sm mt-1">{t('app.subtitle')}</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{t('proxy.title')}</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{t('app.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
         {/* Endpoint Config */}
-        <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-          <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary-400" />
+        <div style={cardStyle}>
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Globe className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
             {t('proxy.endpoint')}
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <div>
-              <label className="text-xs text-dark-muted">{t('proxy.host')}</label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="text"
-                  value={proxyConfig.host}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white"
-                />
-              </div>
+              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.host')}</label>
+              <input
+                type="text"
+                value={proxyConfig.host}
+                readOnly
+                className="w-full mt-1 px-3 py-2 text-sm rounded-lg"
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              />
             </div>
             <div>
-              <label className="text-xs text-dark-muted">{t('proxy.port')}</label>
+              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.port')}</label>
               <input
                 type="number"
                 value={proxyConfig.port}
                 readOnly
-                className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white"
+                className="w-full mt-1 px-3 py-2 text-sm rounded-lg"
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
-            <div className="pt-2 border-t border-dark-border">
-              <p className="text-xs text-dark-muted mb-2">OpenAI Compatible</p>
+            <div className="pt-2" style={{ borderTop: '1px solid var(--border-color)' }}>
+              <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-tertiary)' }}>OpenAI Compatible</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 bg-dark-bg rounded-lg text-xs text-primary-400 font-mono truncate">
+                <code className="flex-1 px-3 py-2 rounded-lg text-xs font-mono truncate" style={{ background: 'var(--bg-secondary)', color: 'var(--primary-color)' }}>
                   {endpoint}/v1
                 </code>
                 <button
                   onClick={() => copyText(`${endpoint}/v1`, 'openai')}
-                  className="p-2 text-dark-muted hover:text-white rounded-lg hover:bg-dark-border/50 transition-colors"
+                  className="p-2 rounded-lg cursor-pointer"
+                  style={{ color: 'var(--text-tertiary)', transition: 'color 150ms ease' }}
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
             <div>
-              <p className="text-xs text-dark-muted mb-2">Anthropic Compatible</p>
+              <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-tertiary)' }}>Anthropic Compatible</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 bg-dark-bg rounded-lg text-xs text-primary-400 font-mono truncate">
+                <code className="flex-1 px-3 py-2 rounded-lg text-xs font-mono truncate" style={{ background: 'var(--bg-secondary)', color: 'var(--primary-color)' }}>
                   {endpoint}/v1/messages
                 </code>
                 <button
                   onClick={() => copyText(`${endpoint}/v1/messages`, 'anthropic')}
-                  className="p-2 text-dark-muted hover:text-white rounded-lg hover:bg-dark-border/50 transition-colors"
+                  className="p-2 rounded-lg cursor-pointer"
+                  style={{ color: 'var(--text-tertiary)', transition: 'color 150ms ease' }}
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </button>
@@ -87,17 +117,18 @@ export function ProxyPage() {
         </div>
 
         {/* Routing Config */}
-        <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-          <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-primary-400" />
+        <div style={cardStyle}>
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Layers className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
             {t('proxy.routing')}
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <div>
-              <label className="text-xs text-dark-muted">{t('proxy.routing')}</label>
+              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.routing')}</label>
               <select
                 value={proxyConfig.routingStrategy}
-                className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white"
+                className="w-full mt-1 px-3 py-2 text-sm rounded-lg"
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
                 <option value="round-robin">{t('proxy.roundRobin')}</option>
                 <option value="priority">{t('proxy.priority')}</option>
@@ -106,59 +137,48 @@ export function ProxyPage() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-dark-muted">{t('proxy.maxRetries')}</label>
+              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.maxRetries')}</label>
               <input
                 type="number"
                 value={proxyConfig.maxRetries}
-                className="w-full mt-1 px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-sm text-white"
+                className="w-full mt-1 px-3 py-2 text-sm rounded-lg"
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-text">{t('proxy.tierEnabled')}</span>
-              <div className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
-                              proxyConfig.tierSystem.enabled ? 'bg-primary-600' : 'bg-dark-border'
-                            }`}>
-                              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                proxyConfig.tierSystem.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.tierEnabled')}</span>
+              <Toggle enabled={proxyConfig.tierSystem.enabled} />
             </div>
             {proxyConfig.tierSystem.enabled && (
-              <div className="space-y-2 pl-2 border-l-2 border-primary-600/30">
-                <div className="text-xs text-dark-muted">{t('proxy.tier1')}: {t('proxy.priority')} 1</div>
-                <div className="text-xs text-dark-muted">{t('proxy.tier2')}: {t('proxy.priority')} 2</div>
-                <div className="text-xs text-dark-muted">{t('proxy.tier3')}: {t('proxy.priority')} 3</div>
+              <div className="flex flex-col gap-2 pl-2" style={{ borderLeft: '2px solid color-mix(in srgb, var(--primary-color) 30%, transparent)' }}>
+                <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.tier1')}: {t('proxy.priority')} 1</div>
+                <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.tier2')}: {t('proxy.priority')} 2</div>
+                <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.tier3')}: {t('proxy.priority')} 3</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Auth Config */}
-        <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-          <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary-400" />
+        <div style={cardStyle}>
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Shield className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
             {t('proxy.auth')}
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-text">{t('proxy.auth')}</span>
-              <div className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
-                              proxyConfig.enableAuth ? 'bg-primary-600' : 'bg-dark-border'
-                            }`}>
-                              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                proxyConfig.enableAuth ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.auth')}</span>
+              <Toggle enabled={proxyConfig.enableAuth} />
             </div>
             <div>
-              <label className="text-xs text-dark-muted">{t('proxy.apiKeys')}</label>
-              <div className="mt-2 space-y-2">
+              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.apiKeys')}</label>
+              <div className="mt-2 flex flex-col gap-2">
                 {proxyConfig.apiKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <code className="flex-1 px-3 py-1.5 bg-dark-bg rounded-lg text-xs text-dark-text font-mono truncate">
+                    <code className="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono truncate" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                       {key.slice(0, 8)}{'*'.repeat(24)}
                     </code>
-                    <button className="p-1.5 text-dark-muted hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-colors text-xs">
+                    <button className="p-1.5 text-xs rounded-lg cursor-pointer" style={{ color: 'var(--text-tertiary)', transition: 'color 150ms ease' }}>
                       {t('common.delete')}
                     </button>
                   </div>
@@ -170,9 +190,10 @@ export function ProxyPage() {
                   value={newApiKey}
                   onChange={(e) => setNewApiKey(e.target.value)}
                   placeholder="sk-..."
-                  className="flex-1 px-3 py-1.5 bg-dark-bg border border-dark-border rounded-lg text-xs text-white placeholder-dark-muted focus:outline-none focus:border-primary-600"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-lg outline-none"
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
-                <button className="px-3 py-1.5 text-xs bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+                <button className="px-3 py-1.5 text-xs rounded-lg cursor-pointer" style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', transition: 'background 150ms ease' }}>
                   {t('proxy.addApiKey')}
                 </button>
               </div>
@@ -181,67 +202,53 @@ export function ProxyPage() {
         </div>
 
         {/* Logging */}
-        <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-          <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-primary-400" />
+        <div style={cardStyle}>
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <FileText className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
             {t('proxy.logging')}
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-text">{t('proxy.logging')}</span>
-              <div className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
-                              proxyConfig.logging.enabled ? 'bg-primary-600' : 'bg-dark-border'
-                            }`}>
-                              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                proxyConfig.logging.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.logging')}</span>
+              <Toggle enabled={proxyConfig.logging.enabled} />
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-text">{t('proxy.compression')}</span>
-              <div className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
-                              proxyConfig.rtkCompression ? 'bg-primary-600' : 'bg-dark-border'
-                            }`}>
-                              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                proxyConfig.rtkCompression ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.compression')}</span>
+              <Toggle enabled={proxyConfig.rtkCompression} />
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-text">{t('proxy.cors')}</span>
-              <div className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
-                              proxyConfig.enableCors ? 'bg-primary-600' : 'bg-dark-border'
-                            }`}>
-                              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                proxyConfig.enableCors ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.cors')}</span>
+              <Toggle enabled={proxyConfig.enableCors} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Logs */}
-      <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-        <h3 className="text-white font-medium mb-4">{t('dashboard.recentRequests')}</h3>
+      <div style={cardStyle}>
+        <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>{t('dashboard.recentRequests')}</h3>
         {requestLogs.length > 0 ? (
-          <div className="space-y-2 max-h-80 overflow-y-auto">
+          <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
             {requestLogs.slice(0, 20).map((log, i) => (
-              <div key={i} className="flex items-center gap-4 px-3 py-2 bg-dark-bg rounded-lg text-xs">
-                <span className={`px-1.5 py-0.5 rounded ${
-                                  log.status < 400 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                }`}>
-                                  {log.status}
+              <div key={i} className="flex items-center gap-4 px-3 py-2 rounded-lg text-xs" style={{ background: 'var(--bg-secondary)' }}>
+                <span
+                  className="px-1.5 py-0.5 rounded font-semibold"
+                  style={{
+                    background: log.status < 400 ? '#d1fae5' : 'rgba(198,87,70,0.14)',
+                    color: log.status < 400 ? '#065f46' : '#8a3a30',
+                  }}
+                >
+                  {log.status}
                 </span>
-                <span className="text-dark-text font-mono flex-1 truncate">{log.model}</span>
-                <span className="text-dark-muted">{log.provider}</span>
-                <span className="text-dark-muted">{log.latencyMs}{t('common.ms')}</span>
-                <span className="text-dark-muted">{log.inputTokens + log.outputTokens} tok</span>
+                <span className="font-mono flex-1 truncate" style={{ color: 'var(--text-primary)' }}>{log.model}</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>{log.provider}</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>{log.latencyMs}{t('common.ms')}</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>{log.inputTokens + log.outputTokens} tok</span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-dark-muted text-center py-8">{t('common.noData')}</p>
+          <p className="text-sm text-center py-8" style={{ color: 'var(--text-tertiary)' }}>{t('common.noData')}</p>
         )}
       </div>
     </div>

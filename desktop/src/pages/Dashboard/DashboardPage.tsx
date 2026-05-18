@@ -11,8 +11,6 @@ import {
   Zap,
   Cloud,
   Box,
-  Play,
-  Square,
   RefreshCw,
   Copy,
   TrendingUp,
@@ -76,26 +74,38 @@ export function DashboardPage() {
   const totalModels = providers.reduce((sum, p) => sum + p.models.length, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6" style={{ animation: 'heroEnter 0.5s ease-out both' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('dashboard.title')}</h1>
-          <p className="text-dark-muted text-sm mt-1">
+          <h1 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{t('dashboard.title')}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
             {t('app.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={copyEndpoint}
-            className="flex items-center gap-2 px-4 py-2 bg-dark-card border border-dark-border rounded-lg text-sm text-dark-muted hover:text-white hover:border-primary-600/50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg cursor-pointer"
+            style={{
+              background: 'color-mix(in srgb, var(--bg-primary) 68%, transparent)',
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--border-color) 68%, transparent)',
+              transition: 'border-color 150ms ease, color 150ms ease',
+            }}
           >
             <Copy className="w-4 h-4" />
             {copied ? t('common.copied') : t('dashboard.copyEndpoint')}
           </button>
           <button
             onClick={loadStatus}
-            className="flex items-center gap-2 px-4 py-2 bg-dark-card border border-dark-border rounded-lg text-sm text-dark-muted hover:text-white hover:border-primary-600/50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg cursor-pointer"
+            style={{
+              background: 'color-mix(in srgb, var(--bg-primary) 68%, transparent)',
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--border-color) 68%, transparent)',
+              transition: 'border-color 150ms ease, color 150ms ease',
+            }}
           >
             <RefreshCw className="w-4 h-4" />
             {t('dashboard.refreshStatus')}
@@ -104,20 +114,32 @@ export function DashboardPage() {
       </div>
 
       {/* Proxy Endpoint Banner */}
-      <div className="bg-gradient-to-r from-primary-600/20 to-primary-800/20 border border-primary-600/30 rounded-xl p-5">
+      <div
+        className="p-5"
+        style={{
+          background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 8%, var(--bg-primary)), color-mix(in srgb, var(--primary-color) 14%, var(--bg-secondary)))',
+          border: '1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color))',
+          borderRadius: 'var(--radius-lg)',
+          backdropFilter: 'blur(var(--glass-blur))',
+          animation: 'fadeSlideUp 0.5s ease-out both',
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-primary-300 mb-1">{t('proxy.endpoint')}</p>
-            <p className="text-lg font-mono text-white">
+            <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>{t('proxy.endpoint')}</p>
+            <p className="text-lg font-mono font-bold" style={{ color: 'var(--text-primary)' }}>
               http://{proxyConfig.host}:{proxyConfig.port}/v1
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${
-              proxyStatus === 'running' ? 'bg-green-400 animate-pulse-dot' :
-              proxyStatus === 'error' ? 'bg-red-400' : 'bg-gray-500'
-            }`} />
-            <span className="text-sm text-white font-medium">
+              proxyStatus === 'running' ? 'animate-pulse-dot' : ''
+            }`} style={{
+              background: proxyStatus === 'running' ? 'var(--success-color)' :
+                         proxyStatus === 'error' ? 'var(--error-color)' : 'var(--text-quaternary)',
+              boxShadow: proxyStatus === 'running' ? '0 0 8px rgba(16, 185, 129, 0.5)' : 'none',
+            }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               {t(`dashboard.${proxyStatus}`)}
             </span>
           </div>
@@ -129,27 +151,23 @@ export function DashboardPage() {
         <StatusCard
           title={t('dashboard.totalRequests')}
           value={proxyStats.totalRequests.toLocaleString()}
-          icon={<Activity className="w-5 h-5 text-white" />}
-          color="bg-blue-600"
+          icon={<Activity className="w-5 h-5" />}
         />
         <StatusCard
           title={t('dashboard.successRate')}
           value={`${successRate}%`}
-          icon={<CheckCircle className="w-5 h-5 text-white" />}
-          color="bg-green-600"
+          icon={<CheckCircle className="w-5 h-5" />}
         />
         <StatusCard
           title={t('dashboard.avgLatency')}
           value={`${proxyStats.avgLatencyMs} ${t('common.ms')}`}
-          icon={<Clock className="w-5 h-5 text-white" />}
-          color="bg-yellow-600"
+          icon={<Clock className="w-5 h-5" />}
         />
         <StatusCard
           title={t('dashboard.tokensUsed')}
           value={proxyStats.totalTokensUsed.toLocaleString()}
           subtitle={proxyStats.tokensSaved > 0 ? `${t('dashboard.tokensSaved')}: ${proxyStats.tokensSaved.toLocaleString()}` : undefined}
-          icon={<Cpu className="w-5 h-5 text-white" />}
-          color="bg-purple-600"
+          icon={<Cpu className="w-5 h-5" />}
         />
       </div>
 
@@ -158,53 +176,49 @@ export function DashboardPage() {
         <StatusCard
           title={t('dashboard.uptime')}
           value={formatUptime(proxyStats.uptime)}
-          icon={<Zap className="w-5 h-5 text-white" />}
-          color="bg-emerald-600"
+          icon={<Zap className="w-5 h-5" />}
         />
         <StatusCard
           title={t('dashboard.activeProviders')}
           value={activeProviders}
-          icon={<Cloud className="w-5 h-5 text-white" />}
-          color="bg-indigo-600"
+          icon={<Cloud className="w-5 h-5" />}
         />
         <StatusCard
           title={t('dashboard.totalModels')}
           value={totalModels}
-          icon={<Box className="w-5 h-5 text-white" />}
-          color="bg-pink-600"
+          icon={<Box className="w-5 h-5" />}
         />
         <StatusCard
           title="RPM"
           value={proxyStats.requestsPerMinute.toFixed(1)}
-          icon={<TrendingUp className="w-5 h-5 text-white" />}
-          color="bg-orange-600"
+          icon={<TrendingUp className="w-5 h-5" />}
         />
       </div>
 
       {/* CLI Configuration Guide */}
-      <div className="bg-dark-card border border-dark-border rounded-xl p-5">
-        <h3 className="text-white font-medium mb-4">{t('proxy.cliConfig')}</h3>
+      <div
+        className="p-6"
+        style={{
+          background: 'linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 86%, transparent), color-mix(in srgb, var(--bg-secondary) 72%, transparent))',
+          border: '1px solid color-mix(in srgb, var(--border-color) 66%, transparent)',
+          borderRadius: 'var(--radius-lg)',
+          backdropFilter: 'blur(var(--glass-blur))',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>{t('proxy.cliConfig')}</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-dark-bg rounded-lg p-4">
-            <p className="text-xs text-primary-400 mb-2">Claude Code / OpenClaw</p>
-            <pre className="text-xs text-dark-text font-mono whitespace-pre-wrap">{`export ANTHROPIC_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}
-export ANTHROPIC_API_KEY=unused`}</pre>
-          </div>
-          <div className="bg-dark-bg rounded-lg p-4">
-            <p className="text-xs text-primary-400 mb-2">Cursor / Codex / Aider</p>
-            <pre className="text-xs text-dark-text font-mono whitespace-pre-wrap">{`export OPENAI_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}/v1
-export OPENAI_API_KEY=unused`}</pre>
-          </div>
-          <div className="bg-dark-bg rounded-lg p-4">
-            <p className="text-xs text-primary-400 mb-2">Windsurf / Kiro</p>
-            <pre className="text-xs text-dark-text font-mono whitespace-pre-wrap">{`Endpoint: http://${proxyConfig.host}:${proxyConfig.port}/v1
-API Key: unused`}</pre>
-          </div>
-          <div className="bg-dark-bg rounded-lg p-4">
-            <p className="text-xs text-primary-400 mb-2">Gemini CLI</p>
-            <pre className="text-xs text-dark-text font-mono whitespace-pre-wrap">{`export GEMINI_API_KEY=unused
-export GEMINI_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}`}</pre>
-          </div>
+          {[
+            { label: 'Claude Code / OpenClaw', code: `export ANTHROPIC_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}\nexport ANTHROPIC_API_KEY=unused` },
+            { label: 'Cursor / Codex / Aider', code: `export OPENAI_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}/v1\nexport OPENAI_API_KEY=unused` },
+            { label: 'Windsurf / Kiro', code: `Endpoint: http://${proxyConfig.host}:${proxyConfig.port}/v1\nAPI Key: unused` },
+            { label: 'Gemini CLI', code: `export GEMINI_API_KEY=unused\nexport GEMINI_BASE_URL=http://${proxyConfig.host}:${proxyConfig.port}` },
+          ].map((item) => (
+            <div key={item.label} className="p-4 rounded-lg" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--primary-color)' }}>{item.label}</p>
+              <pre className="text-xs font-mono whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>{item.code}</pre>
+            </div>
+          ))}
         </div>
       </div>
     </div>
