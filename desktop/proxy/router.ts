@@ -5,6 +5,7 @@ import { RequestLogger } from './middleware/logger.js';
 import { toOpenAIModelsResponse, createOpenAIErrorResponse } from './translator/openai.js';
 import { openaiToAnthropic, anthropicToOpenai } from './translator/anthropic.js';
 import { openaiToGemini, geminiToOpenai } from './translator/gemini.js';
+import { AnthropicStreamTranslator, GeminiStreamTranslator } from './translator/stream.js';
 import type { OpenAIChatRequest } from './translator/openai.js';
 
 interface RouterConfig {
@@ -251,13 +252,39 @@ export class ProxyRouter {
 
       const reader = upstreamResponse.body.getReader();
       const decoder = new TextDecoder();
+      const needsTranslation = provider.name === 'anthropic' || provider.name === 'gemini' || provider.name === 'vertex';
+
+      const anthropicTranslator = provider.name === 'anthropic'
+        ? new AnthropicStreamTranslator(body.model) : null;
+      const geminiTranslator = (provider.name === 'gemini' || provider.name === 'vertex')
+        ? new GeminiStreamTranslator(body.model) : null;
 
       try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          res.write(chunk);
+
+          if (needsTranslation) {
+            const translator = anthropicTranslator ?? geminiTranslator;
+            if (translator) {
+              const translated = translator.processChunk(chunk);
+              for (const line of translated) {
+                res.write(line);
+              }
+            }
+          } else {
+            res.write(chunk);
+          }
+        }
+
+        // Flush remaining buffered data
+        const translator = anthropicTranslator ?? geminiTranslator;
+        if (translator) {
+          const remaining = translator.flush();
+          for (const line of remaining) {
+            res.write(line);
+          }
         }
       } finally {
         res.end();
