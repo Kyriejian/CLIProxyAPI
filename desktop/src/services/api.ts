@@ -41,4 +41,11 @@ export const api = {
   getAccounts: () => request<Array<Record<string, unknown>>>('/accounts'),
   addAccount: (data: Record<string, unknown>) => request<Record<string, unknown>>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
   deleteAccount: (id: string) => request<void>(`/accounts/${id}`, { method: 'DELETE' }),
+
+  // API Key management
+  getKeys: () => request<{ keys: string[]; authEnabled: boolean }>('/keys'),
+  addKey: (key: string) => request<{ key: string; total: number }>('/keys', { method: 'POST', body: JSON.stringify({ key }) }),
+  generateKey: () => request<{ key: string; total: number }>('/keys/generate', { method: 'POST' }),
+  deleteKey: (key: string) => request<{ deleted: boolean; total: number }>(`/keys/${encodeURIComponent(key)}`, { method: 'DELETE' }),
+  updateAuthConfig: (enableAuth: boolean) => request<{ enableAuth: boolean; keys: number }>('/config/auth', { method: 'PUT', body: JSON.stringify({ enableAuth }) }),
 };

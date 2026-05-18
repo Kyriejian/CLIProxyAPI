@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import crypto from 'crypto';
 import { ProxyRouter } from './router.js';
 import { ProviderRegistry } from './providers/registry.js';
 import { ModelRegistry } from './models/registry.js';
@@ -28,6 +29,7 @@ export class ProxyServer {
   private modelRegistry: ModelRegistry;
   private router: ProxyRouter;
   private requestLogger: RequestLogger;
+  private authMiddleware: AuthMiddleware | null = null;
 
   constructor(config: ProxyServerConfig = {}) {
     this.config = {
@@ -67,9 +69,9 @@ export class ProxyServer {
     this.app.use(express.json({ limit: '50mb' }));
     this.app.use(express.text({ type: 'text/event-stream' }));
 
+    this.authMiddleware = new AuthMiddleware(this.config.apiKeys);
     if (this.config.enableAuth && this.config.apiKeys.length > 0) {
-      const authMiddleware = new AuthMiddleware(this.config.apiKeys);
-      this.app.use('/v1', authMiddleware.handle.bind(authMiddleware));
+      this.app.use('/v1', this.authMiddleware.handle.bind(this.authMiddleware));
     }
   }
 
@@ -95,6 +97,13 @@ export class ProxyServer {
     this.app.get('/api/accounts', (_req, res) => this.handleGetAccounts(res));
     this.app.post('/api/accounts', (req, res) => this.handleAddAccount(req, res));
     this.app.delete('/api/accounts/:id', (req, res) => this.handleDeleteAccount(req, res));
+
+    // API Key management
+    this.app.get('/api/keys', (_req, res) => this.handleGetKeys(res));
+    this.app.post('/api/keys', (req, res) => this.handleAddKey(req, res));
+    this.app.post('/api/keys/generate', (_req, res) => this.handleGenerateKey(res));
+    this.app.delete('/api/keys/:key', (req, res) => this.handleDeleteKey(req, res));
+    this.app.put('/api/config/auth', (req, res) => this.handleUpdateAuthConfig(req, res));
 
     // Health check
     this.app.get('/health', (_req, res) => res.json({ status: 'ok' }));
@@ -174,6 +183,55 @@ export class ProxyServer {
 
   private handleDeleteAccount(req: express.Request, res: express.Response): void {
     res.status(204).send();
+  }
+
+  private handleGetKeys(res: express.Response): void {
+    res.json({
+      keys: this.config.apiKeys,
+      authEnabled: this.config.enableAuth,
+    });
+  }
+
+  private handleAddKey(req: express.Request, res: express.Response): void {
+    const { key } = req.body;
+    if (!key || typeof key !== 'string') {
+      res.status(400).json({ error: 'API key is required' });
+      return;
+    }
+    if (this.config.apiKeys.includes(key)) {
+      res.status(409).json({ error: 'Key already exists' });
+      return;
+    }
+    this.config.apiKeys.push(key);
+    this.authMiddleware?.addKey(key);
+    res.status(201).json({ key, total: this.config.apiKeys.length });
+  }
+
+  private handleGenerateKey(res: express.Response): void {
+    const key = `sk-proxy-${crypto.randomBytes(24).toString('hex')}`;
+    this.config.apiKeys.push(key);
+    this.authMiddleware?.addKey(key);
+    res.status(201).json({ key, total: this.config.apiKeys.length });
+  }
+
+  private handleDeleteKey(req: express.Request, res: express.Response): void {
+    const keyParam = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
+    const index = this.config.apiKeys.indexOf(keyParam);
+    if (index === -1) {
+      res.status(404).json({ error: 'Key not found' });
+      return;
+    }
+    this.config.apiKeys.splice(index, 1);
+    this.authMiddleware?.removeKey(keyParam);
+    res.status(200).json({ deleted: true, total: this.config.apiKeys.length });
+  }
+
+  private handleUpdateAuthConfig(req: express.Request, res: express.Response): void {
+    const { enableAuth } = req.body;
+    if (typeof enableAuth === 'boolean') {
+      this.config.enableAuth = enableAuth;
+    }
+    res.json({ enableAuth: this.config.enableAuth, keys: this.config.apiKeys.length });
   }
 
   async start(): Promise<void> {

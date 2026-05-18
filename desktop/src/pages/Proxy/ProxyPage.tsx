@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../../stores/appStore';
-import { Copy, Shield, Globe, FileText, Layers } from 'lucide-react';
+import { api } from '../../services/api';
+import { Copy, Shield, Globe, FileText, Layers, Key, Trash2, Plus } from 'lucide-react';
 
 const cardStyle: React.CSSProperties = {
   background: 'linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 86%, transparent), color-mix(in srgb, var(--bg-secondary) 72%, transparent))',
@@ -35,9 +36,56 @@ function Toggle({ enabled }: { enabled: boolean }) {
 
 export function ProxyPage() {
   const { t } = useTranslation();
-  const { proxyConfig, proxyStatus, requestLogs } = useAppStore();
+  const { proxyConfig, proxyStatus, requestLogs, setProxyConfig } = useAppStore();
   const [copied, setCopied] = useState<string | null>(null);
   const [newApiKey, setNewApiKey] = useState('');
+  const [apiKeys, setApiKeys] = useState<string[]>([]);
+  const [authEnabled, setAuthEnabled] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    api.getKeys().then(data => {
+      setApiKeys(data.keys);
+      setAuthEnabled(data.authEnabled);
+    }).catch(() => {});
+  }, []);
+
+  async function handleGenerateKey() {
+    setGenerating(true);
+    try {
+      const data = await api.generateKey();
+      setApiKeys(prev => [...prev, data.key]);
+      setProxyConfig({ apiKeys: [...apiKeys, data.key] });
+    } catch { /* ignore */ }
+    setGenerating(false);
+  }
+
+  async function handleAddKey() {
+    if (!newApiKey.trim()) return;
+    try {
+      await api.addKey(newApiKey.trim());
+      setApiKeys(prev => [...prev, newApiKey.trim()]);
+      setProxyConfig({ apiKeys: [...apiKeys, newApiKey.trim()] });
+      setNewApiKey('');
+    } catch { /* ignore */ }
+  }
+
+  async function handleDeleteKey(key: string) {
+    try {
+      await api.deleteKey(key);
+      setApiKeys(prev => prev.filter(k => k !== key));
+      setProxyConfig({ apiKeys: apiKeys.filter(k => k !== key) });
+    } catch { /* ignore */ }
+  }
+
+  async function handleToggleAuth() {
+    const newVal = !authEnabled;
+    try {
+      await api.updateAuthConfig(newVal);
+      setAuthEnabled(newVal);
+      setProxyConfig({ enableAuth: newVal });
+    } catch { /* ignore */ }
+  }
 
   function copyText(text: string, key: string) {
     navigator.clipboard.writeText(text);
@@ -168,18 +216,42 @@ export function ProxyPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between py-2">
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('proxy.auth')}</span>
-              <Toggle enabled={proxyConfig.enableAuth} />
+              <div onClick={handleToggleAuth}>
+                <Toggle enabled={authEnabled} />
+              </div>
             </div>
             <div>
-              <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.apiKeys')}</label>
-              <div className="mt-2 flex flex-col gap-2">
-                {proxyConfig.apiKeys.map((key, i) => (
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('proxy.apiKeys')} ({apiKeys.length})</label>
+                <button
+                  onClick={handleGenerateKey}
+                  disabled={generating}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg cursor-pointer"
+                  style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', opacity: generating ? 0.6 : 1, transition: 'all 150ms ease' }}
+                >
+                  <Key className="w-3 h-3" />
+                  {t('proxy.generateKey')}
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+                {apiKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <code className="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono truncate" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
-                      {key.slice(0, 8)}{'*'.repeat(24)}
+                      {key.slice(0, 12)}{'*'.repeat(20)}
                     </code>
-                    <button className="p-1.5 text-xs rounded-lg cursor-pointer" style={{ color: 'var(--text-tertiary)', transition: 'color 150ms ease' }}>
-                      {t('common.delete')}
+                    <button
+                      onClick={() => copyText(key, `key-${i}`)}
+                      className="p-1.5 rounded-lg cursor-pointer"
+                      style={{ color: copied === `key-${i}` ? 'var(--success-color)' : 'var(--text-tertiary)', transition: 'color 150ms ease' }}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteKey(key)}
+                      className="p-1.5 rounded-lg cursor-pointer"
+                      style={{ color: 'var(--text-tertiary)', transition: 'color 150ms ease' }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
@@ -189,11 +261,17 @@ export function ProxyPage() {
                   type="text"
                   value={newApiKey}
                   onChange={(e) => setNewApiKey(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddKey()}
                   placeholder="sk-..."
                   className="flex-1 px-3 py-1.5 text-xs rounded-lg outline-none"
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
-                <button className="px-3 py-1.5 text-xs rounded-lg cursor-pointer" style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', transition: 'background 150ms ease' }}>
+                <button
+                  onClick={handleAddKey}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg cursor-pointer"
+                  style={{ background: 'var(--primary-color)', color: 'var(--primary-contrast)', transition: 'background 150ms ease' }}
+                >
+                  <Plus className="w-3 h-3" />
                   {t('proxy.addApiKey')}
                 </button>
               </div>

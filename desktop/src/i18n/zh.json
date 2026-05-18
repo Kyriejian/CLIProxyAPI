@@ -104,6 +104,7 @@
     "port": "端口",
     "apiKeys": "API 密钥",
     "addApiKey": "添加密钥",
+    "generateKey": "生成密钥",
     "routing": "路由策略",
     "roundRobin": "轮询",
     "priority": "优先级",

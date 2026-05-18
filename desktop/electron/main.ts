@@ -23,7 +23,7 @@ function createWindow(): void {
       nodeIntegration: false,
     },
     frame: true,
-    backgroundColor: '#0f1117',
+    backgroundColor: '#faf9f5',
     show: false,
   });
 

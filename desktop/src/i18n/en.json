@@ -104,6 +104,7 @@
     "port": "Port",
     "apiKeys": "API Keys",
     "addApiKey": "Add Key",
+    "generateKey": "Generate Key",
     "routing": "Routing Strategy",
     "roundRobin": "Round Robin",
     "priority": "Priority",

@@ -15,7 +15,12 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && node scripts/build-electron.js && electron-builder"
+    "electron:build": "vite build && node scripts/build-electron.js && electron-builder",
+    "pack": "vite build && node scripts/build-electron.js && electron-builder --dir",
+    "dist": "vite build && node scripts/build-electron.js && electron-builder",
+    "dist:win": "vite build && node scripts/build-electron.js && electron-builder --win",
+    "dist:mac": "vite build && node scripts/build-electron.js && electron-builder --mac",
+    "dist:linux": "vite build && node scripts/build-electron.js && electron-builder --linux"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
@@ -54,5 +59,72 @@
     "vite": "^6.3.5",
     "vitest": "^4.1.6",
     "wait-on": "^9.0.10"
+  },
+  "build": {
+    "appId": "com.cpamc.ai-proxy-manager",
+    "productName": "AI Proxy Manager",
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "proxy/**/*",
+      "!proxy/__tests__/**",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "proxy",
+        "to": "proxy",
+        "filter": ["**/*", "!__tests__/**"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/logo.png"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "public/logo.png",
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/logo.png",
+      "category": "Development"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AI Proxy Manager"
+    }
   }
 }
